@@ -1,0 +1,31 @@
+# DB 스키마 및 Supabase 구조 설계
+
+**Task ID:** T-002
+**Status:** DONE
+**Importance:** MUST
+**Complexity:** 5/10
+**Urgency:** 10/10
+**Dependencies:** T-001
+
+## Description
+
+**requirements**:
+- users rounds round_items leaderboards orgs word_items 테이블 설계
+- Supabase 프로젝트 초기화 및 RLS 정책 설정
+- 샘플 데이터 삽입 스크립트(initial_data) 작성
+
+**implementation details**:
+- Supabase SQL Editor 또는 migration 스크립트 활용
+- 각 테이블 컬럼 타입 및 외래키 정의
+- RLS 정책 기본 생성 및 테스트용 role 부여
+- initial_data.sql에 샘플 INSERT 쿼리 작성
+
+**test strategy**:
+- migration 스크립트 실행 후 스키마 구조 검증
+- RLS 정책 적용 여부 테스트
+- 샘플 데이터 쿼리 결과 검증
+
+---
+
+**Created:** 2025-08-19T13:42:30.345Z
+**Updated:** 2025-08-19T15:04:40.248Z

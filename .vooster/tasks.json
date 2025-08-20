@@ -1,0 +1,116 @@
+{
+  "totalCount": 11,
+  "downloadedAt": "2025-08-20T07:22:56.220Z",
+  "tasks": [
+    {
+      "taskId": "T-001",
+      "summary": "프로젝트 환경 셋업",
+      "status": "DONE",
+      "importance": "MUST",
+      "complexity": 3,
+      "urgency": 10,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-19T13:59:24.420Z"
+    },
+    {
+      "taskId": "T-002",
+      "summary": "DB 스키마 및 Supabase 구조 설계",
+      "status": "DONE",
+      "importance": "MUST",
+      "complexity": 5,
+      "urgency": 10,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-19T15:04:40.248Z"
+    },
+    {
+      "taskId": "T-003",
+      "summary": "퀴즈 라운드 플레이 기능 개발",
+      "status": "DONE",
+      "importance": "MUST",
+      "complexity": 8,
+      "urgency": 10,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-19T15:15:52.985Z"
+    },
+    {
+      "taskId": "T-004",
+      "summary": "라운드 결과 및 점수 계산 로직 구현",
+      "status": "DONE",
+      "importance": "MUST",
+      "complexity": 7,
+      "urgency": 9,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-20T01:42:52.460Z"
+    },
+    {
+      "taskId": "T-005",
+      "summary": "리더보드(전체/학교) MVP 구현",
+      "status": "DONE",
+      "importance": "MUST",
+      "complexity": 7,
+      "urgency": 8,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-20T04:33:17.436Z"
+    },
+    {
+      "taskId": "T-006",
+      "summary": "교실 코드 생성 및 참여 기능",
+      "status": "DONE",
+      "importance": "MUST",
+      "complexity": 6,
+      "urgency": 8,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-20T05:07:49.502Z"
+    },
+    {
+      "taskId": "T-007",
+      "summary": "데일리 챌린지 & 출석 보상 MVP",
+      "status": "IN_PROGRESS",
+      "importance": "SHOULD",
+      "complexity": 5,
+      "urgency": 7,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-20T07:18:21.040Z"
+    },
+    {
+      "taskId": "T-008",
+      "summary": "오답 노트/단어장 MVP",
+      "status": "BACKLOG",
+      "importance": "SHOULD",
+      "complexity": 4,
+      "urgency": 6,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-19T13:42:30.345Z"
+    },
+    {
+      "taskId": "T-009",
+      "summary": "배너 광고 연동(광고 숨김 포함)",
+      "status": "BACKLOG",
+      "importance": "SHOULD",
+      "complexity": 4,
+      "urgency": 6,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-19T13:42:30.345Z"
+    },
+    {
+      "taskId": "T-010",
+      "summary": "게스트/로그인(사용자 인증) 기능",
+      "status": "DONE",
+      "importance": "SHOULD",
+      "complexity": 5,
+      "urgency": 5,
+      "createdAt": "2025-08-19T13:42:30.345Z",
+      "updatedAt": "2025-08-20T05:39:50.461Z"
+    },
+    {
+      "taskId": "T-011",
+      "summary": "Drizzle ORM 도입 및 Supabase DB 스키마 코드 마이그레이션",
+      "status": "DONE",
+      "importance": "MUST",
+      "complexity": 7,
+      "urgency": 10,
+      "createdAt": "2025-08-20T00:50:05.123Z",
+      "updatedAt": "2025-08-20T01:02:21.174Z"
+    }
+  ]
+}

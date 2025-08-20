@@ -1,0 +1,34 @@
+# 프로젝트 환경 셋업
+
+**Task ID:** T-001
+**Status:** DONE
+**Importance:** MUST
+**Complexity:** 3/10
+**Urgency:** 10/10
+**Dependencies:** None
+
+## Description
+
+**requirements**:
+- Next.js 15 프로젝트 초기화 및 TypeScript 설정
+- TailwindCSS 및 shadcn/ui 연동
+- Supabase 클라이언트 기본 구성 파일 생성(src/lib/supabase.ts)
+- GitHub 레포지토리 및 Vercel 배포 파이프라인 설정
+- 공통 Lint/Formatter 구성 및 환경변수 관리
+
+**implementation details**:
+- create-next-app with TypeScript 템플릿 사용
+- tailwind.config.ts 및 postcss 설정
+- npm 또는 yarn을 통해 shadcn/ui 및 lucide-react 설치
+- supabase-js 클라이언트 설정 및 환경변수(.env.local) 등록
+- GitHub Actions 워크플로우 및 Vercel 프로젝트 연동
+
+**test strategy**:
+- CI에서 lint type-check build 테스트 통과 확인
+- Vercel Preview 배포 후 초기 페이지 로드 확인(FCP <3초)
+- Supabase 연결 테스트 및 클라이언트 샘플 쿼리 검증
+
+---
+
+**Created:** 2025-08-19T13:42:30.345Z
+**Updated:** 2025-08-19T13:59:24.420Z

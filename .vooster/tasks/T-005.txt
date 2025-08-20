@@ -1,0 +1,31 @@
+# 리더보드(전체/학교) MVP 구현
+
+**Task ID:** T-005
+**Status:** DONE
+**Importance:** MUST
+**Complexity:** 7/10
+**Urgency:** 8/10
+**Dependencies:** T-004
+
+## Description
+
+**requirements**:
+- 글로벌 학교별 리더보드 뷰 제공
+- 내 순위 강조 및 퍼센타일 스테나인 표시
+- 실시간 업데이트 Supabase Realtime 구독
+
+**implementation details**:
+- features/leaderboard 도메인 컴포넌트 및 훅 생성
+- @supabase/supabase-js로 실시간 구독 설정
+- @tanstack/react-query를 통한 초기 데이터 페칭 및 캐싱
+- TailwindCSS 및 shadcn/ui로 테이블 카드 스타일링
+
+**test strategy**:
+- E2E 테스트: 구독 이벤트 시 UI 실시간 갱신 확인(Playwright)
+- 단위 테스트: 데이터 페칭 실패 및 로딩 상태 처리 검증
+- org 필터 적용 시 정상 동작 확인
+
+---
+
+**Created:** 2025-08-19T13:42:30.345Z
+**Updated:** 2025-08-20T04:33:17.436Z

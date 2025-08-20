@@ -1,0 +1,31 @@
+# 배너 광고 연동(광고 숨김 포함)
+
+**Task ID:** T-009
+**Status:** BACKLOG
+**Importance:** SHOULD
+**Complexity:** 4/10
+**Urgency:** 6/10
+**Dependencies:** T-001, T-006
+
+## Description
+
+**requirements**:
+- Google AdSense AdMob SDK 비동기 로드
+- 결과 화면 하단 배너 광고 노출
+- 교실 코드 참여 시 광고 비표시 로직 구현
+
+**implementation details**:
+- AdBanner 컴포넌트를 React.lazy Suspense로 분리
+- useEffect로 SDK 스크립트 동적 삽입
+- 광고 로딩 실패 시 Error Boundary 적용
+- org context 또는 쿠키 값으로 광고 숨김 제어
+
+**test strategy**:
+- E2E 테스트: 광고 노출 및 숨김 시나리오 확인(Playwright)
+- 단위 테스트: Error Boundary 동작 검증(Jest)
+- 성능 테스트: 광고 비동기 로드 후 FCP 영향 측정
+
+---
+
+**Created:** 2025-08-19T13:42:30.345Z
+**Updated:** 2025-08-19T13:42:30.345Z

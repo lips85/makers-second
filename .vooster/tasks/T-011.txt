@@ -1,0 +1,151 @@
+# Drizzle ORM 도입 및 Supabase DB 스키마 코드 마이그레이션
+
+**Task ID:** T-011
+**Status:** DONE
+**Importance:** MUST
+**Complexity:** 7/10
+**Urgency:** 10/10
+**Dependencies:** T-001, T-002
+
+## Description
+
+### 개요
+- 목적: Drizzle ORM을 도입하여 Supabase(PostgreSQL) 스키마를 코드로 관리하고 마이그레이션 및 초기 샘플 데이터 삽입을 자동화한다.
+
+### 요구사항(requirements)
+- 개발자가 단일 명령으로 스키마 마이그레이션과 샘플 데이터 삽입을 실행할 수 있어야 한다.
+- 기존 설계된 테이블(users, rounds, round_items, leaderboards, orgs, word_items)을 Drizzle TypeScript 스키마로 1:1 정의한다.
+- Supabase 연결은 환경변수로 관리하고 SSL을 강제한다.
+- RLS 정책은 SQL 파일로 버전 관리되며 마이그레이션 단계에서 적용 가능해야 한다.
+- 샘플 데이터는 개발 환경에서만 삽입되며 운영 DB와 혼동되지 않도록 분기한다.
+- 마이그레이션 및 시드 결과를 자동 검증하는 스크립트를 포함한다.
+
+### 구현 상세(implementation details)
+- 패키지: drizzle-orm, drizzle-kit, pg, tsx, dotenv, zod(환경변수 검증), uuid.
+- 디렉터리: src/db/schema/*.ts, src/db/migrations(sql auto-gen: ./drizzle), src/db/policies/*.sql, src/db/seed/*.ts, src/db/client.ts, src/db/verify.ts, drizzle.config.ts.
+- 연결: node-postgres Pool + drizzle-orm/node-postgres. 환경변수 SUPABASE_DB_URL(sslmode=require), NODE_ENV, SEED_ENABLED.
+- 마이그레이션 전략: drizzle-kit generate → drizzle-kit migrate(또는 push 금지; CI에서는 migrate 사용). 정책 SQL은 마이그레이션 이후 별도 apply 스크립트에서 실행.
+- 시드 전략: 개발 환경(NODE_ENV=development 또는 SEED_ENABLED=true)에서만 실행. upsert로 중복 방지. 트랜잭션 사용.
+- RLS: 테이블별 ENABLE ROW LEVEL SECURITY, 정책은 읽기/쓰기 최소권한 원칙. 서비스 롤 키로만 정책 apply.
+- 검증: 스키마 일치 여부(정보 스키마 조회), RLS 차단 동작, 리더보드/라운드 샘플 쿼리 결과 확인. CI 워크플로에 db:check 단계 추가.
+
+### 데이터 모델 개요(요약)
+- users(uuid id PK, display_name, org_id FK→orgs.id, created_at)
+- orgs(uuid id PK, code UNIQUE, name, created_at)
+- word_items(uuid id PK, word TEXT, difficulty REAL, created_at)
+- rounds(uuid id PK, user_id FK→users.id, duration_seconds INT, correct_count INT, total_count INT, score INT, created_at)
+- round_items(uuid id PK, round_id FK→rounds.id, word_id FK→word_items.id, is_correct BOOLEAN, answer_text TEXT, elapsed_ms INT, created_at)
+- leaderboards(date_key DATE, scope TEXT, scope_id UUID NULL, user_id UUID, score INT, rank INT, PRIMARY KEY(date_key, scope, scope_id, user_id))
+
+### 의존성 및 선행조건
+- T-001(프로젝트 환경 셋업), T-002(DB 스키마 및 Supabase 구조 설계) 완료.
+
+### 의사코드(pseudo-code)
+```bash
+# 설치
+pnpm add drizzle-orm pg uuid zod
+pnpm add -D drizzle-kit tsx dotenv
+```
+```ts
+// drizzle.config.ts
+import { defineConfig } from \"drizzle-kit\";
+export default defineConfig({
+  schema: \"./src/db/schema/index.ts\",
+  out: \"./drizzle\",
+  dialect: \"postgresql\",
+  dbCredentials: { url: process.env.SUPABASE_DB_URL!, ssl: true },
+});
+```
+```ts
+// src/db/client.ts
+import \"dotenv/config\";
+import { drizzle } from \"drizzle-orm/node-postgres\";
+import { Pool } from \"pg\";
+const pool = new Pool({ connectionString: process.env.SUPABASE_DB_URL, ssl: { rejectUnauthorized: false } });
+export const db = drizzle(pool);
+```
+```ts
+// src/db/schema/index.ts (발췌)
+import { pgTable, uuid, varchar, integer, boolean, timestamp, real, text, date } from \"drizzle-orm/pg-core\";
+export const orgs = pgTable(\"orgs\", { id: uuid(\"id\").primaryKey().defaultRandom(), code: varchar(\"code\", { length: 16 }).notNull().unique(), name: varchar(\"name\", { length: 120 }).notNull(), createdAt: timestamp(\"created_at\").defaultNow().notNull() });
+export const users = pgTable(\"users\", { id: uuid(\"id\").primaryKey().defaultRandom(), displayName: varchar(\"display_name\", { length: 60 }).notNull(), orgId: uuid(\"org_id\").references(() => orgs.id), createdAt: timestamp(\"created_at\").defaultNow().notNull() });
+export const wordItems = pgTable(\"word_items\", { id: uuid(\"id\").primaryKey().defaultRandom(), word: varchar(\"word\", { length: 80 }).notNull(), difficulty: real(\"difficulty\").default(0.0).notNull(), createdAt: timestamp(\"created_at\").defaultNow().notNull() });
+export const rounds = pgTable(\"rounds\", { id: uuid(\"id\").primaryKey().defaultRandom(), userId: uuid(\"user_id\").references(() => users.id).notNull(), durationSeconds: integer(\"duration_seconds\").notNull(), correctCount: integer(\"correct_count\").notNull(), totalCount: integer(\"total_count\").notNull(), score: integer(\"score\").notNull(), createdAt: timestamp(\"created_at\").defaultNow().notNull() });
+export const roundItems = pgTable(\"round_items\", { id: uuid(\"id\").primaryKey().defaultRandom(), roundId: uuid(\"round_id\").references(() => rounds.id).notNull(), wordId: uuid(\"word_id\").references(() => wordItems.id).notNull(), isCorrect: boolean(\"is_correct\").notNull(), answerText: text(\"answer_text\"), elapsedMs: integer(\"elapsed_ms\"), createdAt: timestamp(\"created_at\").defaultNow().notNull() });
+export const leaderboards = pgTable(\"leaderboards\", { dateKey: date(\"date_key\").notNull(), scope: varchar(\"scope\", { length: 24 }).notNull(), scopeId: uuid(\"scope_id\"), userId: uuid(\"user_id\").references(() => users.id).notNull(), score: integer(\"score\").notNull(), rank: integer(\"rank\").notNull() }, (t) => ({ pk: { columns: [t.dateKey, t.scope, t.scopeId, t.userId], isPrimaryKey: true } }));
+```
+```bash
+# 마이그레이션 생성 및 적용
+pnpm drizzle-kit generate
+pnpm drizzle-kit migrate
+```
+```sql
+-- src/db/policies/001_enable_rls.sql
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rounds ENABLE ROW LEVEL SECURITY;
+ALTER TABLE round_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leaderboards ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orgs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE word_items ENABLE ROW LEVEL SECURITY;
+-- 예시 정책: 전역 읽기 허용(leaderboards, orgs, word_items)
+CREATE POLICY lb_read_all ON leaderboards FOR SELECT USING (true);
+CREATE POLICY orgs_read_all ON orgs FOR SELECT USING (true);
+CREATE POLICY words_read_all ON word_items FOR SELECT USING (true);
+-- 사용자 고유 데이터 정책(본인 것만)
+CREATE POLICY rounds_owner_rw ON rounds USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE POLICY round_items_owner_rw ON round_items USING (EXISTS (SELECT 1 FROM rounds r WHERE r.id = round_id AND r.user_id = auth.uid())) WITH CHECK (EXISTS (SELECT 1 FROM rounds r WHERE r.id = round_id AND r.user_id = auth.uid()));
+```
+```ts
+// scripts/apply-policies.ts
+import fs from \"node:fs\"; import path from \"node:path\"; import { Pool } from \"pg\"; import \"dotenv/config\";
+const pool = new Pool({ connectionString: process.env.SUPABASE_DB_URL, ssl: { rejectUnauthorized: false } });
+const dir = path.resolve(\"src/db/policies\");
+const files = fs.readdirSync(dir).filter(f => f.endsWith(\".sql\")).sort();
+const run = async () => { const c = await pool.connect(); try { for (const f of files) { const sql = fs.readFileSync(path.join(dir, f), \"utf8\"); await c.query(sql); } } finally { c.release(); await pool.end(); } };
+run();
+```
+```ts
+// scripts/seed.ts
+import { db } from \"../src/db/client\"; import { orgs, users, wordItems, rounds, roundItems } from \"../src/db/schema\"; import { eq } from \"drizzle-orm\"; import { v4 as uuidv4 } from \"uuid\"; import \"dotenv/config\";
+if (!(process.env.NODE_ENV === \"development\" || process.env.SEED_ENABLED === \"true\")) { console.log(\"seed skipped\"); process.exit(0); }
+await db.transaction(async (tx) => {
+  const [org] = await tx.insert(orgs).values({ code: \"CLASS123\", name: \"Sample Class\" }).onConflictDoNothing().returning();
+  const [u1] = await tx.insert(users).values({ displayName: \"Alice\", orgId: org?.id }).onConflictDoNothing().returning();
+  const [w1] = await tx.insert(wordItems).values([{ word: \"abandon\", difficulty: 0.6 }, { word: \"benevolent\", difficulty: 0.7 }]).onConflictDoNothing().returning();
+  const [r1] = await tx.insert(rounds).values({ userId: u1!.id, durationSeconds: 60, correctCount: 8, totalCount: 10, score: 820 }).returning();
+  await tx.insert(roundItems).values({ roundId: r1!.id, wordId: w1![0].id, isCorrect: true, answerText: \"give up\", elapsedMs: 3200 });
+});
+```
+```json
+// package.json (scripts)
+{
+  \"scripts\": {
+    \"db:generate\": \"drizzle-kit generate\",
+    \"db:migrate\": \"drizzle-kit migrate && tsx scripts/apply-policies.ts\",
+    \"db:reset\": \"rimraf drizzle && pnpm db:generate && pnpm db:migrate\",
+    \"db:seed\": \"tsx scripts/seed.ts\",
+    \"db:all\": \"pnpm db:migrate && pnpm db:seed\",
+    \"db:check\": \"tsx src/db/verify.ts\"
+  }
+}
+```
+```ts
+// src/db/verify.ts
+import { db } from \"./client\"; import { sql } from \"drizzle-orm\";
+const rows = await db.execute(sql`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name IN ('users','rounds','round_items','leaderboards','orgs','word_items');`);
+if (rows.length !== 6) { throw new Error(\"schema mismatch\"); }
+console.log(\"schema ok\");
+```
+
+### 테스트 전략(test strategy)
+- 정적 검증: drizzle.config.ts 경로, 환경변수 존재 여부를 zod로 검증.
+- 마이그레이션: pnpm db:generate → pnpm db:migrate 수행 후 information_schema로 테이블·인덱스·FK 존재 확인.
+- RLS: anon 키로 rounds SELECT가 거부되고 leaderboards/word_items SELECT가 허용되는지 supabase-js로 확인.
+- 시드: 개발 환경에서 pnpm db:seed 실행 후 각 테이블 카운트 및 FK 무결성 검사. 재실행 시 중복 삽입이 없어야 함(onConflictDoNothing 확인).
+- 회귀: CI에서 pnpm db:reset && pnpm db:all && pnpm db:check 파이프라인 실행. 실패 시 로그 보존.
+- 수동 점검: 샘플 라운드로 리더보드 집계 쿼리 샘플 실행 및 응답 시간 측정(쿼리 플랜 확인).
+
+---
+
+**Created:** 2025-08-20T00:50:05.123Z
+**Updated:** 2025-08-20T01:02:21.174Z

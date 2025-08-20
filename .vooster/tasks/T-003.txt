@@ -1,0 +1,33 @@
+# 퀴즈 라운드 플레이 기능 개발
+
+**Task ID:** T-003
+**Status:** DONE
+**Importance:** MUST
+**Complexity:** 8/10
+**Urgency:** 10/10
+**Dependencies:** T-001, T-002
+
+## Description
+
+**requirements**:
+- 퀴즈 라운드 화면 진입 및 단어 뜻 제시
+- 사용자 정답 입력 UI 및 콤보 카운트 표시
+- 타이머(60 75 90초) UI 및 종료 처리
+- 실시간 채점 로직 및 점수 집계
+
+**implementation details**:
+- 게임 페이지 app/(game)/[roundId] Next.js 페이지 생성
+- @tanstack/react-query로 word_items API 호출
+- Timer 훅(date-fns 기반)으로 남은 시간 관리
+- shadcn/ui 컴포넌트를 활용한 입력창 및 버튼 스타일링
+- 클라이언트 채점 로직 및 상태 관리 최적화
+
+**test strategy**:
+- 단위 테스트: Timer 훅 동작 검증(Jest)
+- 통합 테스트: 사용자 입력 시 채점 로직 확인(Playwright)
+- 모바일 뷰포트 FCP 및 상호작용 성능 측정
+
+---
+
+**Created:** 2025-08-19T13:42:30.345Z
+**Updated:** 2025-08-19T15:15:52.985Z
