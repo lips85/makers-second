@@ -1,12 +1,16 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Navbar } from "@/components/layout/Navbar"
 import { Play, Trophy, Users, Target } from "lucide-react"
 import Link from "next/link"
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      {/* Navigation Bar */}
+      <Navbar />
+      
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <header className="text-center mb-12">
@@ -65,9 +69,14 @@ export default function Home() {
                 교실 코드를 입력하여 그룹 대항전에 참여하세요
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <Button variant="outline" className="w-full" size="lg">
                 코드 입력
+              </Button>
+              <Button asChild variant="ghost" className="w-full">
+                <Link href="/teacher">
+                  교사용 코드 생성
+                </Link>
               </Button>
             </CardContent>
           </Card>
@@ -87,16 +96,18 @@ export default function Home() {
             </CardHeader>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2 mb-2">
-                <Trophy className="h-5 w-5 text-yellow-600" />
-                <CardTitle className="text-lg">리더보드</CardTitle>
-              </div>
-              <CardDescription>
-                글로벌·친구·학교 순위로 경쟁하며 동기부여
-              </CardDescription>
-            </CardHeader>
+          <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Link href="/leaderboard">
+              <CardHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <Trophy className="h-5 w-5 text-yellow-600" />
+                  <CardTitle className="text-lg">리더보드</CardTitle>
+                </div>
+                <CardDescription>
+                  글로벌·친구·학교 순위로 경쟁하며 동기부여
+                </CardDescription>
+              </CardHeader>
+            </Link>
           </Card>
 
           <Card>

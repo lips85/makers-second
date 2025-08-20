@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { RoundGame } from '@/components/game/RoundGame'
+import { Navbar } from '@/components/layout/Navbar'
 
 interface RoundPageProps {
   params: {
@@ -37,6 +38,7 @@ export default async function RoundPage({ params, searchParams }: RoundPageProps
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <Navbar />
       <RoundGame roundId={roundId} duration={duration} />
     </div>
   )

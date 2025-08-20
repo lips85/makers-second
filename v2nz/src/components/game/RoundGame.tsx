@@ -7,9 +7,11 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft, Play, Pause, RotateCcw } from 'lucide-react'
 import Link from 'next/link'
 import { useGameState } from '@/hooks/useGameState'
+import { useAttendanceCheckin } from '@/hooks/useAttendanceCheckin'
 import { TimerDisplay } from './TimerDisplay'
 import { AnswerInput } from './AnswerInput'
 import { GameResultModal } from './GameResultModal'
+import { AttendanceRewardModal } from './AttendanceRewardModal'
 import type { SubmitRoundResponse } from '@/lib/game/submit-round-schema'
 
 interface RoundGameProps {
@@ -21,6 +23,10 @@ export function RoundGame({ roundId, duration }: RoundGameProps) {
   const [showResultModal, setShowResultModal] = useState(false)
   const [resultData, setResultData] = useState<SubmitRoundResponse | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showAttendanceReward, setShowAttendanceReward] = useState(false)
+  const [attendanceRewardData, setAttendanceRewardData] = useState<any>(null)
+  
+  const { checkin } = useAttendanceCheckin()
   
   const {
     gameState,
@@ -82,6 +88,18 @@ export function RoundGame({ roundId, duration }: RoundGameProps) {
             const result = await response.json()
             setResultData(result)
             setShowResultModal(true)
+            
+            // 라운드 제출 성공 후 출석 체크 시도
+            try {
+              const attendanceResult = await checkin()
+              if (attendanceResult && attendanceResult.isNew) {
+                setAttendanceRewardData(attendanceResult)
+                setShowAttendanceReward(true)
+              }
+            } catch (attendanceError) {
+              console.warn('출석 체크 실패:', attendanceError)
+              // 출석 체크 실패는 라운드 결과에 영향을 주지 않음
+            }
           } else {
             console.error('Failed to submit round data')
             // API 오류 시에도 결과 모달을 표시하되, 서버 데이터 없이
@@ -338,6 +356,15 @@ export function RoundGame({ roundId, duration }: RoundGameProps) {
         percentileStats={resultData?.percentileStats}
         leaderboard={resultData?.leaderboard}
       />
+
+      {/* Attendance Reward Modal */}
+      {attendanceRewardData && (
+        <AttendanceRewardModal
+          data={attendanceRewardData}
+          isOpen={showAttendanceReward}
+          onClose={() => setShowAttendanceReward(false)}
+        />
+      )}
     </div>
   )
 }
