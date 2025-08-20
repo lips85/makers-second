@@ -3,6 +3,7 @@ import { useRoundTimer } from './useRoundTimer'
 import { useRandomWordItems } from './useWordItems'
 import { processAnswer, type GameStats, type AnswerResult } from '@/lib/game/scoring'
 import type { WordItem } from '@/lib/api/word-items'
+import { wrongAnswerService } from '@/lib/wrong-answers/service'
 
 export type GameState = 'loading' | 'ready' | 'playing' | 'paused' | 'finished' | 'error'
 
@@ -209,6 +210,22 @@ export function useGameState({ roundId, duration, wordCount = 10 }: UseGameState
     )
 
     dispatch({ type: 'SUBMIT_ANSWER', payload: { result, newStats } })
+
+    // 오답인 경우 오답 노트에 기록
+    if (!result.isCorrect && currentWord) {
+      try {
+        wrongAnswerService.recordWrongAnswer({
+          id: currentWord.id,
+          word: currentWord.word,
+          meaning: currentWord.meaning,
+          difficulty: currentWord.difficulty,
+          category: currentWord.category
+        })
+      } catch (error) {
+        console.warn('오답 기록 실패:', error)
+        // 오답 기록 실패는 게임 진행에 영향을 주지 않음
+      }
+    }
 
     // Move to next question after a short delay
     setTimeout(() => {
