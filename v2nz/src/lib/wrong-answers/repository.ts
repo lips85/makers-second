@@ -42,6 +42,10 @@ export class SupabaseWrongAnswerRepository implements WrongAnswerRepository {
     this.isEnabled = enabled
   }
 
+  getEnabled(): boolean {
+    return this.isEnabled
+  }
+
   async getAll(userId: string): Promise<WrongAnswerItem[]> {
     if (!this.isEnabled) {
       console.log('Supabase 오답 노트 동기화가 비활성화되어 있습니다')
@@ -186,7 +190,7 @@ export class WrongAnswerSyncManager {
     conflicts: number
     errors: number
   }> {
-    if (!this.repository.isEnabled) {
+    if (!this.repository.getEnabled()) {
       console.log('오답 노트 동기화가 비활성화되어 있습니다')
       return { success: true, synced: 0, conflicts: 0, errors: 0 }
     }

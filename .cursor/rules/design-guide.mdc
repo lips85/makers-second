@@ -1,0 +1,135 @@
+---
+alwaysApply: true
+---
+
+# 영어 단어 스피드 퀴즈 디자인 가이드
+
+## 1. 전체적인 무드 (Overall Mood)
+K-12 학생들을 위한 3~5분 워밍업 게임이라는 핵심 목적에 맞춰, **경쾌하고 역동적인 무드**를 지향합니다. 사용자가 짧은 시간 안에 즉각적인 재미와 성취감을 느낄 수 있도록, 게임적인 요소를 적극 활용합니다. 전체적으로 밝고 채도 높은 색상을 사용하여 긍정적이고 활기찬 분위기를 조성하며, 직관적인 UI와 빠른 피드백을 통해 몰입감을 극대화합니다. 지루한 학습이 아닌, 친구들과 즐기는 ‘한 판의 게임’이라는 인상을 주는 것을 최우선 목표로 삼습니다.
+
+## 2. 참조 서비스 (Reference Service)
+- **Name**: Popcat
+- **Description**: 클릭이라는 단 하나의 인터랙션으로 전 세계 사용자들과 순위 경쟁을 벌이는 극도로 단순한 웹 기반 밈(Meme) 게임입니다.
+- **Design Mood**: 미니멀한 UI 구성에 레트로/픽셀 감성을 더해, 핵심 기능에만 사용자를 집중시키는 디자인입니다. 복잡한 그래픽 없이도 즉각적인 피드백과 경쟁심리를 자극하여 높은 바이럴을 이끌어냈습니다. 우리 서비스는 Popcat의 ‘단순함’과 ‘경쟁의 재미’라는 핵심 철학을 차용하되, 보다 따뜻하고 생동감 있는 컬러 팔레트와 세련된 컴포넌트를 사용하여 학습 환경에 적합하도록 재해석합니다.
+- **Primary Color**: `#009EE8` (추정)
+- **Secondary Color**: `#FFF212` (추정)
+
+## 3. 색상 & 그라데이션 (Color & Gradient)
+- **Primary Color**: `#FF6B6B` (Lively Coral)
+- **Secondary Color**: `#FFD93D` (Vivid Yellow)
+- **Accent Color**: `#5BC0EB` (Sky Blue)
+- **Success Color**: `#4CAF50` (Positive Green)
+- **Grayscale**:
+    - `Text`: `#1F2937`
+    - `Subtle Text`: `#6B7280`
+    - `Border/Divider`: `#E5E7EB`
+    - `Background`: `#F9FAFB`
+    - `White`: `#FFFFFF`
+- **Mood**: 전반적으로 **따뜻하고(Warm) 채도가 높은(High Saturation)** 색상 조합을 사용하여, 사용자에게 에너제틱하고 긍정적인 경험을 제공합니다.
+- **Color Usage**:
+    - **Primary (`#FF6B6B`)**: ‘게임 시작’, ‘다시 도전’ 등 가장 중요한 CTA 버튼, 정답 표시, 타이머 등 핵심 상호작용 요소에 사용하여 사용자의 행동을 유도합니다.
+    - **Secondary (`#FFD93D`)**: 콤보 달성, 최고 점수 기록, 보상 획득 등 긍정적 성취를 강조하는 요소에 사용하여 시각적 즐거움을 더합니다.
+    - **Accent (`#5BC0EB`)**: 소셜 공유, 보조 정보 안내 등 부가적인 기능이나 정보성 UI에 사용하여 주 색상과 조화롭게 구분합니다.
+    - **Success (`#4CAF50`)**: 라운드 클리어, 데일리 챌린지 완료 등 명확한 성공 상태를 알릴 때 사용합니다.
+    - **Grayscale**: 본문 텍스트, 배경, 비활성 상태 등 전체 UI의 안정감과 가독성을 확보하는 데 사용합니다.
+
+## 4. 타이포그래피 & 폰트 (Typography & Font)
+가독성이 뛰어나고 다양한 굵기를 지원하여 위계 표현이 용이한 `Pretendard` 폰트를 서비스 전반에 사용합니다.
+
+- **Heading 1**: Pretendard, 32px, Bold (700)
+    - 사용처: 라운드 종료 후 결과 타이틀 ("Round Clear!", "New Record!")
+- **Heading 2**: Pretendard, 24px, Bold (700)
+    - 사용처: 각 화면의 주 제목 (리더보드, 단어장 등)
+- **Heading 3**: Pretendard, 20px, SemiBold (600)
+    - 사용처: 카드나 섹션 내부의 소제목
+- **Body**: Pretendard, 16px, Regular (400)
+    - 사용처: 일반적인 설명 텍스트, 문제 지문
+- **Caption**: Pretendard, 14px, Regular (400)
+    - 사용처: 버튼 내 텍스트, 입력 필드 라벨, 보조 설명
+- **Helper Text**: Pretendard, 12px, Regular (400)
+    - 사용처: 입력 필드 하단의 도움말, 저작권 정보 등
+- **공통 속성**:
+    - `letter-spacing`: -0.5px
+    - `line-height`: 1.6
+
+## 5. 레이아웃 & 구조 (Layout & Structure)
+학생들이 모바일 환경에서 QR 코드로 빠르게 접속하는 핵심 사용 시나리오에 맞춰 **모바일 우선(Mobile-First)** 접근 방식을 채택합니다.
+
+- **Grid System**: 4px 기반의 그리드 시스템을 사용하여 모든 여백과 간격을 일관되게 유지합니다. (e.g., 4px, 8px, 12px, 16px, 24px...)
+- **Mobile Layout**: 단일 컬럼 레이아웃을 기본으로 하여 사용자의 시선이 위에서 아래로 자연스럽게 흐르도록 설계합니다. 핵심 콘텐츠(단어 카드, 입력 필드)를 화면 중앙에 배치하여 집중도를 높입니다.
+- **Desktop/Tablet Layout**: 화면 너비가 넓어지면, 리더보드와 같은 보조 정보를 메인 콘텐츠 좌우에 배치하는 2-3단 컬럼 구조를 고려할 수 있습니다.
+- **주요 영역**:
+    - **Header**: 라운드 진행 중에는 타이머, 점수, 콤보 등 핵심 정보만 최소한으로 노출합니다.
+    - **Content Area**: 서비스의 핵심 기능이 위치하는 영역으로, 불필요한 시각적 요소를 배제하여 콘텐츠 자체에 몰입할 수 있도록 합니다.
+    - **Bottom Bar**: 결과 화면 등 라운드 플레이가 종료된 시점에 배너 광고를 노출하는 영역으로 사용합니다. 교실 코드가 입력되면 이 영역은 숨겨집니다.
+
+## 6. 비주얼 스타일 (Visual Style)
+- **Icons**: 기술 스택에 명시된 `lucide-react` 아이콘 라이브러리를 일관되게 사용합니다.
+    - 스타일: 선(Line) 스타일
+    - 크기: 24x24px
+    - 굵기: 1.5px stroke
+- **Illustrations**: 사용자의 감성적인 만족도를 높이기 위해 온보딩, 보상 획득, 빈 화면(Empty State) 등에 간단하고 친근한 일러스트를 사용합니다. 전체 컬러 팔레트와 조화를 이루는 플랫 디자인 스타일을 적용합니다.
+- **Border Radius**: 컴포넌트의 용도에 따라 둥글기(Radius)를 체계적으로 적용하여 부드럽고 친근한 인상을 줍니다.
+    - `4px`: 태그, 라벨 등 작은 요소
+    - `8px`: 입력 필드, 정보 카드 등 일반적인 컨테이너
+    - `12px`: 주요 CTA 버튼
+    - `999px (Pill)`: 콤보 카운터와 같이 강조가 필요한 특정 요소
+- **Shadows**: 카드나 모달 등 화면 위로 떠 있는 요소에 부드러운 그림자 효과를 적용하여 깊이감을 표현하고 정보의 위계를 시각적으로 구분합니다.
+
+## 7. UX 가이드 (UX Guide)
+주 사용자인 K-12 학생들의 특성(짧은 집중력, 경쟁심, 게임에 대한 높은 이해도)을 고려하여 다음과 같은 UX 원칙을 수립합니다.
+
+1.  **신속한 진입 (Frictionless Entry)**: QR 코드 스캔 또는 링크 클릭 후, 회원가입 없이 닉네임 입력만으로 즉시 게임을 시작할 수 있어야 합니다. 3초 이내에 첫 화면이 로딩되고, 2단계 이내에 게임에 진입하는 것을 목표로 합니다.
+2.  **즉각적인 피드백 (Immediate Feedback)**: 정답/오답 입력 시 0.2초 이내의 즉각적인 시각/청각 피드백을 제공하여 게임의 속도감과 몰입감을 유지합니다. 콤보, 점수 획득 시 만족감을 주는 마이크로 인터랙션(e.g., 0.15초 스케일업 효과)을 적용합니다.
+3.  **명확한 동기 부여 (Clear Motivation)**: 라운드 종료 후, 점수와 함께 ‘퍼센타일’ 정보를 가장 먼저 보여주어 자신의 상대적 위치를 명확하게 인지시킵니다. 리더보드에서는 내 순위를 항상 강조 표시하고, ‘다시 도전’ 버튼을 가장 크고 눈에 띄게 배치하여 재도전을 강력하게 유도합니다.
+4.  **방해 요소 최소화 (Minimized Distractions)**: 60~90초의 짧은 라운드 진행 중에는 타이머와 문제 외에 어떤 알림이나 팝업도 노출하지 않습니다. 광고는 반드시 라운드와 라운드 사이, 즉 결과 화면 하단과 같은 자연스러운 휴지기에 배치합니다.
+5.  **긍정적 경험 강화 (Reinforcing Positive Experiences)**: 데일리 출석 보상, 레벨업, 신기록 달성 등 긍정적 이벤트 발생 시, 이를 축하하는 명확하고 즐거운 시각 효과를 제공하여 사용자의 성취감을 극대화하고 지속적인 방문을 유도합니다.
+
+## 8. UI 컴포넌트 가이드 (UI Component Guide)
+`shadcn/ui`와 `TailwindCSS`를 기반으로, 서비스의 핵심 컴포넌트를 다음과 같이 정의합니다.
+
+- **Buttons (버튼)**
+    - **Primary**:
+        - `background-color`: `primary (#FF6B6B)`
+        - `color`: `white (#FFFFFF)`
+        - `border-radius`: `12px`
+        - `font-weight`: `600 (SemiBold)`
+        - `state`: 호버 시 `brightness(95%)` 효과, 클릭 시 `scale(0.98)` 효과
+    - **Secondary**:
+        - `background-color`: `background (#F9FAFB)`
+        - `color`: `text (#1F2937)`
+        - `border`: `1px solid #E5E7EB`
+        - `border-radius`: `12px`
+    - **Ghost**:
+        - `background-color`: `transparent`
+        - `color`: `subtle text (#6B7280)`
+        - `state`: 호버 시 `background-color: #F9FAFB`
+
+- **Input Fields (입력 필드)**
+    - `background-color`: `white (#FFFFFF)`
+    - `border`: `1px solid #E5E7EB`
+    - `border-radius`: `8px`
+    - `padding`: `12px 16px`
+    - `font-size`: `16px`
+    - `state`: 포커스 시 `border-color: accent (#5BC0EB)` 및 `box-shadow` 효과
+
+- **Cards (카드)**
+    - **단어 카드**:
+        - `background-color`: `white (#FFFFFF)`
+        - `border-radius`: `16px`
+        - `box-shadow`: `0 4px 12px rgba(0, 0, 0, 0.05)`
+        - `padding`: `24px`
+    - **결과 공유 카드**:
+        - 동적으로 생성되는 이미지. Primary, Secondary 색상을 활용한 화려한 배경과 굵은 타이포그래피로 사용자의 성과를 매력적으로 표현.
+
+- **Navigation / Tabs (내비게이션 / 탭)**
+    - 리더보드(전체, 학교, 친구) 전환에 사용됩니다.
+    - 활성 탭 아래에 `primary (#FF6B6B)` 색상의 2px 두께 밑줄(underline)을 표시하여 현재 선택된 상태를 명확히 합니다.
+    - 폰트 굵기를 `SemiBold`로 변경하여 비활성 탭과 구분합니다.
+
+- **Modals / Pop-ups (모달 / 팝업)**
+    - `background-color`: `white (#FFFFFF)`
+    - `border-radius`: `16px`
+    - `box-shadow`: `0 8px 24px rgba(0, 0, 0, 0.1)`
+    - 화면 뒤에는 `70%` 불투명도의 어두운 오버레이(`rgba(0,0,0,0.7)`)를 추가하여 모달에 집중시킵니다.
+    - 내부에 닫기(X) 아이콘 버튼과 명확한 CTA 버튼을 포함합니다.
