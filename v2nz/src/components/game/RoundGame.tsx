@@ -81,20 +81,24 @@ export function RoundGame({ roundId, duration }: RoundGameProps) {
           if (response.ok) {
             const result = await response.json()
             setResultData(result)
+            setShowResultModal(true)
           } else {
             console.error('Failed to submit round data')
+            // API 오류 시에도 결과 모달을 표시하되, 서버 데이터 없이
+            setShowResultModal(true)
           }
         } catch (error) {
           console.error('Error submitting round data:', error)
+          // 네트워크 오류 시에도 결과 모달을 표시하되, 서버 데이터 없이
+          setShowResultModal(true)
         } finally {
           setIsSubmitting(false)
-          setShowResultModal(true)
         }
       }
 
       submitRoundData()
     }
-  }, [isGameFinished, isSubmitting, wordItems, stats, duration, totalTime, roundId])
+  }, [isGameFinished, wordItems, stats, duration, totalTime, roundId])
 
   const handleRestart = () => {
     setShowResultModal(false)

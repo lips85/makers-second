@@ -26,6 +26,7 @@ export function AnswerInput({
 }: AnswerInputProps) {
   const [answer, setAnswer] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isComposing, setIsComposing] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,10 +50,20 @@ export function AnswerInput({
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
       e.preventDefault()
       handleSubmit(e)
     }
+  }
+
+  const handleCompositionStart = () => {
+    setIsComposing(true)
+  }
+
+  const handleCompositionEnd = (e: React.CompositionEvent<HTMLInputElement>) => {
+    setIsComposing(false)
+    // Update the answer with the final composed text
+    setAnswer(e.currentTarget.value)
   }
 
   // Maintain focus after submission
@@ -98,6 +109,8 @@ export function AnswerInput({
                 value={answer}
                 onChange={(e) => setAnswer(e.target.value)}
                 onKeyDown={handleKeyDown}
+                onCompositionStart={handleCompositionStart}
+                onCompositionEnd={handleCompositionEnd}
                 placeholder="정답을 입력하세요..."
                 disabled={disabled || isLoading || isSubmitting}
                 className="text-lg py-3 px-4"

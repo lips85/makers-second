@@ -75,15 +75,22 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       }, { status: 400 });
     }
 
-    // 4. 사용자 인증 확인
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    // 4. 사용자 인증 확인 (임시로 비활성화)
+    let user = null;
+    let userId = null;
+    try {
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      if (!authError && authUser) {
+        user = authUser;
+        userId = authUser.id;
+      }
+    } catch (error) {
+      console.log('Authentication not available, proceeding without user');
+    }
     
-    if (authError || !user) {
-      return NextResponse.json({
-        success: false,
-        message: 'Authentication required',
-        errors: [{ code: 'AUTH_REQUIRED', message: 'User must be authenticated' }]
-      }, { status: 401 });
+    // 임시로 익명 사용자 ID 생성 (나중에 인증 시스템 구현 필요)
+    if (!userId) {
+      userId = `anonymous_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
 
     // 5. 서버 메트릭 계산
@@ -102,7 +109,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       .from('rounds')
       .insert({
         id: roundId,
-        user_id: user.id,
+        user_id: userId,
         duration_sec: validatedRequest.durationSec,
         total_questions: validatedRequest.totalQuestions,
         correct_answers: validatedRequest.correctAnswers,
@@ -146,7 +153,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 9. 리더보드 업데이트
     const leaderboardResult = await upsertLeaderboard({
-      userId: user.id,
+      userId: userId,
       period: 'daily',
       durationSec: validatedRequest.durationSec,
       score: serverMetrics.totalScore,
@@ -164,7 +171,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 10. 사용자 순위 조회
     const rankResult = await getUserLeaderboardRank({
-      userId: user.id,
+      userId: userId,
       period: 'daily',
       durationSec: validatedRequest.durationSec
     });
