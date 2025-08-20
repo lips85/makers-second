@@ -1,7 +1,7 @@
 ---
 description: 
 globs: 
-alwaysApply: false
+alwaysApply: always
 ---
 
 # ISMS-P Based Secure Development Rules
