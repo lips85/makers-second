@@ -14,6 +14,8 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:all": "pnpm db:migrate && pnpm db:seed",
     "db:check": "tsx src/db/verify.ts",
+    "db:compare": "tsx scripts/compare-schemas.ts",
+    "db:sync-check": "npm run db:compare && npm run db:check",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

@@ -115,11 +115,27 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
-    - name: Check database schema
+    - name: 🔍 Compare local and remote schemas
+      run: npm run db:compare
+      env:
+        NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+
+    - name: ✅ Verify database schema
       run: npm run db:check
       env:
         NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+    - name: 📊 Schema sync summary
+      if: failure()
+      run: |
+        echo "❌ Schema synchronization failed!"
+        echo "Please run the following commands to fix:"
+        echo "1. npm run db:compare  # Check differences"
+        echo "2. supabase db push   # Apply missing migrations"
+        echo "3. npm run db:sync-check  # Verify sync"
 
   security:
     runs-on: ubuntu-latest
