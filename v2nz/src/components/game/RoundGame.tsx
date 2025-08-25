@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, Play, Pause, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Play, Pause, RotateCcw, Clock, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import { useGameState } from '@/hooks/useGameState'
 import { useAttendanceCheckin } from '@/hooks/useAttendanceCheckin'
@@ -13,6 +13,7 @@ import { AnswerInput } from './AnswerInput'
 import { GameResultModal } from './GameResultModal'
 import { AttendanceRewardModal } from './AttendanceRewardModal'
 import type { SubmitRoundResponse } from '@/lib/game/submit-round-schema'
+import { Progress } from '@/components/ui/progress'
 
 interface RoundGameProps {
   roundId: string
@@ -128,6 +129,12 @@ export function RoundGame({ roundId, duration }: RoundGameProps) {
     submitAnswer(answer)
   }
 
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes}:${remainingSeconds < 10 ? '0' : ''}${remainingSeconds}`;
+  };
+
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -214,48 +221,35 @@ export function RoundGame({ roundId, duration }: RoundGameProps) {
         </div>
       )}
 
-      {/* Timer Display */}
-      {(isGameActive || gameState === 'paused' || isGameFinished) && (
-        <TimerDisplay
-          remainingTime={timer.remainingTime}
-          totalTime={duration}
-          isExpired={timer.state === 'expired'}
-          isPaused={timer.state === 'paused'}
-        />
-      )}
-
-      {/* Game Progress */}
-      {isGameActive && (
-        <div className="max-w-2xl mx-auto mb-6">
-          <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-            <span>진행률: {Math.round(progress * 100)}%</span>
-            <span>문제 {stats.totalQuestions + 1} / {totalQuestions}</span>
-          </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-            <div 
-              className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-              style={{ width: `${progress * 100}%` }}
-            ></div>
-          </div>
+      {/* Answer Input - Only show when game is active (not paused) */}
+      {currentWord && isGameActive && (
+        <div className="max-w-2xl mx-auto mb-3">
+          <AnswerInput
+            currentWord={currentWord}
+            combo={stats.currentCombo}
+            onSubmit={handleSubmitAnswer}
+            disabled={!canSubmitAnswer || timer.state === 'expired'}
+            isLoading={false}
+          />
         </div>
       )}
 
       {/* Game Controls */}
-      {isGameActive && (
-        <div className="max-w-2xl mx-auto mb-6">
+      {(isGameActive || gameState === 'paused') && (
+        <div className="max-w-2xl mx-auto mb-3">
           <div className="flex gap-2 justify-center">
             {timer.state === 'running' ? (
-              <Button onClick={pauseGame} variant="outline">
+              <Button onClick={pauseGame} variant="outline" size="sm">
                 <Pause className="h-4 w-4 mr-2" />
                 일시정지
               </Button>
             ) : (
-              <Button onClick={resumeGame} variant="outline">
+              <Button onClick={resumeGame} variant="outline" size="sm">
                 <Play className="h-4 w-4 mr-2" />
                 계속하기
               </Button>
             )}
-            <Button onClick={resetGame} variant="outline">
+            <Button onClick={resetGame} variant="outline" size="sm">
               <RotateCcw className="h-4 w-4 mr-2" />
               다시 시작
             </Button>
@@ -263,26 +257,127 @@ export function RoundGame({ roundId, duration }: RoundGameProps) {
         </div>
       )}
 
-      {/* Answer Input */}
-      {currentWord && (isGameActive || gameState === 'paused') && (
-        <AnswerInput
-          currentWord={currentWord}
-          combo={stats.currentCombo}
-          onSubmit={handleSubmitAnswer}
-          disabled={!canSubmitAnswer || timer.state === 'expired'}
-          isLoading={false}
-        />
+      {/* Timer, Progress & Stats - Combined Card */}
+      {(isGameActive || gameState === 'paused' || isGameFinished) && (
+        <div className="max-w-2xl mx-auto mb-3">
+          <Card>
+            <CardContent className="p-3">
+              {/* Timer Section */}
+              <div className="mb-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                      남은 시간
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {timer.state === 'paused' && (
+                      <Badge variant="secondary" className="text-xs">
+                        일시정지
+                      </Badge>
+                    )}
+                    {timer.state === 'expired' && (
+                      <Badge variant="destructive" className="text-xs">
+                        시간 종료
+                      </Badge>
+                    )}
+                    {timer.remainingTime <= 10 && timer.remainingTime > 0 && timer.state !== 'expired' && (
+                      <Badge variant="destructive" className="text-xs animate-pulse">
+                        <AlertTriangle className="h-3 w-3 mr-1" />
+                        시간 부족
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className={`text-xl font-bold transition-colors duration-200 ${
+                      timer.state === 'expired' ? 'text-red-600' : 
+                      timer.remainingTime <= 10 && timer.remainingTime > 0 ? 'text-orange-600' : 
+                      'text-gray-900 dark:text-white'
+                    }`}>
+                      {formatTime(timer.remainingTime)}
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {formatTime(duration)}
+                    </span>
+                  </div>
+                  <Progress 
+                    value={duration > 0 ? ((duration - timer.remainingTime) / duration) * 100 : 0} 
+                    className={`h-2 transition-all duration-200 ease-out ${
+                      timer.state === 'expired' ? 'bg-red-100 dark:bg-red-900' :
+                      timer.remainingTime <= 10 && timer.remainingTime > 0 ? 'bg-red-100 dark:bg-red-900 animate-pulse' :
+                      'bg-gray-100 dark:bg-gray-800'
+                    }`}
+                    indicatorColor={
+                      timer.state === 'expired' ? 'bg-red-600' :
+                      timer.remainingTime <= 10 && timer.remainingTime > 0 ? 'bg-red-600' :
+                      'bg-blue-600'
+                    }
+                  />
+                </div>
+              </div>
+
+              {/* Progress Section */}
+              <div className="mb-3">
+                <div className="flex gap-1">
+                  {Array.from({ length: totalQuestions }, (_, index) => {
+                    // 현재 문제까지의 정답/오답 상태를 확인
+                    const isCompleted = index < stats.totalQuestions;
+                    const isCorrect = index < stats.correctAnswers;
+                    
+                    return (
+                      <div
+                        key={index}
+                        className={`flex-1 h-3 rounded-sm border transition-all duration-300 ${
+                          isCompleted
+                            ? isCorrect
+                              ? 'bg-blue-600 border-blue-600' // 정답: 파란색
+                              : 'bg-red-600 border-red-600'   // 오답: 빨간색
+                            : 'bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600' // 미완료: 회색
+                        }`}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Stats Section */}
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div>
+                  <div className="text-xl font-bold text-blue-600">
+                    {stats.totalScore.toLocaleString()}
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">총 점수</p>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-green-600">
+                    {stats.accuracy.toFixed(1)}%
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">정확도</p>
+                </div>
+                <div>
+                  <div className="text-xl font-bold text-purple-600">
+                    {stats.maxCombo}
+                  </div>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">최대 콤보</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* Answer Feedback */}
       {lastAnswerResult && (
-        <div className="max-w-2xl mx-auto mt-4">
+        <div className="max-w-2xl mx-auto mb-3">
           <Card className={`${
             lastAnswerResult.isCorrect 
               ? 'border-green-200 bg-green-50 dark:bg-green-900/20' 
               : 'border-red-200 bg-red-50 dark:bg-red-900/20'
           }`}>
-            <CardContent className="p-4">
+            <CardContent className="p-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Badge variant={lastAnswerResult.isCorrect ? 'default' : 'destructive'}>
@@ -299,36 +394,6 @@ export function RoundGame({ roundId, duration }: RoundGameProps) {
                     {lastAnswerResult.combo} 콤보!
                   </Badge>
                 )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Game Stats */}
-      {isGameActive && (
-        <div className="max-w-2xl mx-auto mt-6">
-          <Card>
-            <CardContent className="p-4">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {stats.totalScore.toLocaleString()}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">총 점수</p>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-green-600">
-                    {stats.accuracy.toFixed(1)}%
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">정확도</p>
-                </div>
-                <div>
-                  <div className="text-2xl font-bold text-purple-600">
-                    {stats.maxCombo}
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">최대 콤보</p>
-                </div>
               </div>
             </CardContent>
           </Card>

@@ -23,9 +23,9 @@ export function TimerDisplay({
   const isLowTime = remainingTime <= 10 && remainingTime > 0
 
   return (
-    <Card className="w-full max-w-2xl mx-auto mb-6">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-3">
+    <Card className="w-full max-w-2xl mx-auto mb-3">
+      <CardContent className="p-3">
+        <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-gray-600 dark:text-gray-400" />
             <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -52,9 +52,9 @@ export function TimerDisplay({
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center justify-between">
-            <span className={`text-2xl font-bold ${
+            <span className={`text-xl font-bold transition-colors duration-200 ${
               isExpired ? 'text-red-600' : 
               isLowTime ? 'text-orange-600' : 
               'text-gray-900 dark:text-white'
@@ -68,7 +68,7 @@ export function TimerDisplay({
 
           <Progress 
             value={progress} 
-            className={`h-2 ${
+            className={`h-2 transition-all duration-200 ease-out ${
               isExpired ? 'bg-red-100 dark:bg-red-900' :
               isLowTime ? 'bg-orange-100 dark:bg-orange-900' :
               'bg-gray-100 dark:bg-gray-800'

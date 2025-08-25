@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { differenceInMilliseconds, addSeconds } from 'date-fns'
 
 export type TimerState = 'idle' | 'running' | 'paused' | 'expired'
 
@@ -10,8 +9,8 @@ interface UseRoundTimerOptions {
 }
 
 interface UseRoundTimerReturn {
-  remainingTime: number // in seconds
-  elapsedTime: number // in seconds
+  remainingTime: number // in seconds (with decimals)
+  elapsedTime: number // in seconds (with decimals)
   progress: number // 0 to 1
   state: TimerState
   start: () => void
@@ -28,11 +27,11 @@ export function useRoundTimer({
   const [state, setState] = useState<TimerState>('idle')
   const [remainingTime, setRemainingTime] = useState(duration)
   const [elapsedTime, setElapsedTime] = useState(0)
-  const [startTime, setStartTime] = useState<Date | null>(null)
-  const [pauseTime, setPauseTime] = useState<Date | null>(null)
-  const [totalPausedTime, setTotalPausedTime] = useState(0)
   
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
+  const startTimeRef = useRef<number | null>(null)
+  const pauseTimeRef = useRef<number | null>(null)
+  const totalPausedTimeRef = useRef<number>(0)
   const onExpireRef = useRef(onExpire)
   const onTickRef = useRef(onTick)
 
@@ -42,49 +41,24 @@ export function useRoundTimer({
     onTickRef.current = onTick
   }, [onExpire, onTick])
 
-  // Reset when duration changes
-  useEffect(() => {
-    setRemainingTime(duration)
-    setElapsedTime(0)
-    setState('idle')
-    setStartTime(null)
-    setPauseTime(null)
-    setTotalPausedTime(0)
-  }, [duration])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-      }
-    }
-  }, [])
-
-  const calculateRemainingTime = useCallback((now: Date): number => {
-    if (!startTime) return duration
-
-    const actualElapsed = differenceInMilliseconds(now, startTime) - totalPausedTime
-    const remaining = Math.max(0, duration * 1000 - actualElapsed)
-    
-    return Math.ceil(remaining / 1000)
-  }, [startTime, totalPausedTime, duration])
-
   const updateTimer = useCallback(() => {
-    const now = new Date()
-    const remaining = calculateRemainingTime(now)
-    const elapsed = duration - remaining
+    if (!startTimeRef.current) return
 
-    setRemainingTime(remaining)
+    const now = Date.now()
+    const elapsedMs = now - startTimeRef.current - totalPausedTimeRef.current
+    const elapsed = elapsedMs / 1000 // Convert to seconds with decimals
+    const remainingSeconds = Math.max(0, duration - elapsed)
+
+    setRemainingTime(remainingSeconds)
     setElapsedTime(elapsed)
 
     // Call onTick callback
     if (onTickRef.current) {
-      onTickRef.current(remaining)
+      onTickRef.current(remainingSeconds)
     }
 
     // Check if timer expired
-    if (remaining <= 0) {
+    if (remainingSeconds <= 0) {
       setState('expired')
       if (intervalRef.current) {
         clearInterval(intervalRef.current)
@@ -96,26 +70,26 @@ export function useRoundTimer({
         onExpireRef.current()
       }
     }
-  }, [calculateRemainingTime, duration])
+  }, [duration])
 
   const start = useCallback(() => {
     if (state === 'running') return
 
-    const now = new Date()
-    setStartTime(now)
-    setPauseTime(null)
-    setTotalPausedTime(0)
+    const now = Date.now()
+    startTimeRef.current = now
+    pauseTimeRef.current = null
+    totalPausedTimeRef.current = 0
     setState('running')
 
-    // Start the interval
-    intervalRef.current = setInterval(updateTimer, 100) // Update every 100ms for smooth progress
+    // Start the interval with 100ms updates for smooth progress (10fps)
+    intervalRef.current = setInterval(updateTimer, 100)
   }, [state, updateTimer])
 
   const pause = useCallback(() => {
     if (state !== 'running') return
 
-    const now = new Date()
-    setPauseTime(now)
+    const now = Date.now()
+    pauseTimeRef.current = now
     setState('paused')
 
     if (intervalRef.current) {
@@ -127,26 +101,26 @@ export function useRoundTimer({
   const resume = useCallback(() => {
     if (state !== 'paused') return
 
-    const now = new Date()
-    if (pauseTime) {
-      const pauseDuration = differenceInMilliseconds(now, pauseTime)
-      setTotalPausedTime(prev => prev + pauseDuration)
+    const now = Date.now()
+    if (pauseTimeRef.current) {
+      const pauseDuration = now - pauseTimeRef.current
+      totalPausedTimeRef.current += pauseDuration
     }
     
-    setPauseTime(null)
+    pauseTimeRef.current = null
     setState('running')
 
-    // Restart the interval
+    // Restart the interval with 100ms updates (10fps)
     intervalRef.current = setInterval(updateTimer, 100)
-  }, [state, pauseTime, updateTimer])
+  }, [state, updateTimer])
 
   const reset = useCallback(() => {
     setRemainingTime(duration)
     setElapsedTime(0)
     setState('idle')
-    setStartTime(null)
-    setPauseTime(null)
-    setTotalPausedTime(0)
+    startTimeRef.current = null
+    pauseTimeRef.current = null
+    totalPausedTimeRef.current = 0
 
     if (intervalRef.current) {
       clearInterval(intervalRef.current)
@@ -154,7 +128,15 @@ export function useRoundTimer({
     }
   }, [duration])
 
-  // Calculate progress (0 to 1)
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+      }
+    }
+  }, [])
+
   const progress = duration > 0 ? elapsedTime / duration : 0
 
   return {

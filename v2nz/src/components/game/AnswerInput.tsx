@@ -82,9 +82,9 @@ export function AnswerInput({
 
   return (
     <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
+      <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-bold text-center flex-1">
+          <CardTitle className="text-lg font-bold text-center flex-1">
             {currentWord.word}
           </CardTitle>
           {combo > 0 && (
@@ -95,9 +95,9 @@ export function AnswerInput({
           )}
         </div>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
+      <CardContent className="pt-0">
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div className="space-y-1">
             <Label htmlFor="answer" className="text-sm font-medium">
               이 단어의 뜻을 입력하세요
             </Label>
@@ -113,7 +113,7 @@ export function AnswerInput({
                 onCompositionEnd={handleCompositionEnd}
                 placeholder="정답을 입력하세요..."
                 disabled={disabled || isLoading || isSubmitting}
-                className="text-lg py-3 px-4"
+                className="text-lg py-2 px-3"
                 aria-describedby="answer-help"
                 aria-live="polite"
                 aria-label={`${currentWord.word}의 뜻을 입력하세요`}
@@ -124,7 +124,7 @@ export function AnswerInput({
                 </div>
               )}
             </div>
-            <p id="answer-help" className="text-sm text-gray-500 dark:text-gray-400">
+            <p id="answer-help" className="text-xs text-gray-500 dark:text-gray-400">
               Enter 키를 누르거나 제출 버튼을 클릭하세요
             </p>
           </div>
@@ -134,7 +134,7 @@ export function AnswerInput({
               type="submit"
               disabled={!answer.trim() || disabled || isLoading || isSubmitting}
               className="flex-1"
-              size="lg"
+              size="sm"
             >
               <Target className="h-4 w-4 mr-2" />
               {isSubmitting ? '제출 중...' : '정답 제출'}
@@ -143,8 +143,8 @@ export function AnswerInput({
         </form>
 
         {/* Word Info */}
-        <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
-          <div className="flex items-center justify-between text-sm">
+        <div className="mt-3 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="flex items-center justify-between text-xs">
             <span className="text-gray-600 dark:text-gray-400">
               난이도: 
               <Badge variant="outline" className="ml-1">
@@ -160,7 +160,7 @@ export function AnswerInput({
             )}
           </div>
           {currentWord.example_sentence && (
-            <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">
               <strong>예문:</strong> {currentWord.example_sentence}
             </div>
           )}

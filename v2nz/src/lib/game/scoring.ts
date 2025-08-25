@@ -55,13 +55,19 @@ export function judgeAnswer(userAnswer: string, correctAnswer: string): boolean 
     return true
   }
   
-  // Check for common variations
+  // Check for common variations (but not empty strings)
   const variations = [
     processedCorrectAnswer,
     processedCorrectAnswer.replace(/\s+/g, ''), // No spaces
-    processedCorrectAnswer.replace(/[가-힣]/g, ''), // Korean only
-    processedCorrectAnswer.replace(/[a-zA-Z]/g, ''), // English only
   ]
+  
+  // Only add non-empty variations
+  if (processedCorrectAnswer.replace(/[가-힣]/g, '').length > 0) {
+    variations.push(processedCorrectAnswer.replace(/[가-힣]/g, '')) // Korean only
+  }
+  if (processedCorrectAnswer.replace(/[a-zA-Z]/g, '').length > 0) {
+    variations.push(processedCorrectAnswer.replace(/[a-zA-Z]/g, '')) // English only
+  }
   
   return variations.includes(processedUserAnswer)
 }

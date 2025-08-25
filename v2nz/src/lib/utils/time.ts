@@ -1,11 +1,23 @@
 /**
- * Format seconds to MM:SS format
+ * Format seconds to MM:SS format (with smooth updates)
  */
 export function formatTime(seconds: number): string {
   const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+  const remainingSeconds = Math.floor(seconds % 60)
   
   return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`
+}
+
+/**
+ * Format seconds to MM:SS.ss format (with milliseconds for ultra smooth display)
+ */
+export function formatTimeSmooth(seconds: number): string {
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+  const wholeSeconds = Math.floor(remainingSeconds)
+  const milliseconds = Math.floor((remainingSeconds - wholeSeconds) * 100)
+  
+  return `${minutes.toString().padStart(2, '0')}:${wholeSeconds.toString().padStart(2, '0')}.${milliseconds.toString().padStart(2, '0')}`
 }
 
 /**
