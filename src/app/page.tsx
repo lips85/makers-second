@@ -1,27 +1,34 @@
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Navbar } from "@/components/layout/Navbar"
-import { Play, Trophy, Users, Target } from "lucide-react"
-import Link from "next/link"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Navbar } from "@/components/layout/Navbar";
+import { Play, Trophy, Users, Target } from "lucide-react";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
       {/* Navigation Bar */}
       <Navbar />
-      
+
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            V2NZ
+            Word Rush
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mb-6">
             영어 단어 스피드 퀴즈
           </p>
           <p className="text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">
-            60~90초 라운드 동안 텍스트 기반 단어 문제를 풀고 정확도 × 속도로 점수를 산출하는 학습 게임
+            60~90초 라운드 동안 텍스트 기반 단어 문제를 풀고 정확도 × 속도로
+            점수를 산출하는 학습 게임
           </p>
         </header>
 
@@ -74,9 +81,7 @@ export default function Home() {
                 코드 입력
               </Button>
               <Button asChild variant="ghost" className="w-full">
-                <Link href="/teacher">
-                  교사용 코드 생성
-                </Link>
+                <Link href="/teacher">교사용 코드 생성</Link>
               </Button>
             </CardContent>
           </Card>
@@ -131,5 +136,5 @@ export default function Home() {
         </div>
       </div>
     </div>
-  )
+  );
 }
