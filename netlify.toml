@@ -1,0 +1,47 @@
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# 보안 스캔 설정 - 특정 키만 제외
+[build.processing.secrets]
+  omit_keys = ["NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_URL"]
+
+# 또는 보안 스캔 완전 비활성화
+# [build.processing.secrets]
+#   enabled = false
+
+# 빌드 최적화
+[build.processing]
+  skip_processing = false
+
+# 헤더 설정
+[[headers]]
+  for = "/_next/static/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# 리다이렉트 설정
+[[redirects]]
+  from = "/_next/image"
+  to = "/.netlify/images"
+  query = {url = ":url", w = ":width", q = ":quality"}
+  status = 200
+
+[[redirects]]
+  from = "/_ipx/*"
+  to = "/.netlify/images"
+  query = {url = ":url", w = ":width", q = ":quality"}
+  status = 200
+
+# 환경 변수 처리
+[context.production.environment]
+  NODE_ENV = "production"
+
+[context.deploy-preview.environment]
+  NODE_ENV = "production"
+
+[context.branch-deploy.environment]
+  NODE_ENV = "production"
