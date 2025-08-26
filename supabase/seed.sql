@@ -1,4 +1,4 @@
--- Sample data for V2NZ English Word Speed Quiz
+-- Sample data for Word Rush English Word Speed Quiz
 
 -- Insert sample organizations
 INSERT INTO orgs (id, name, code, type, description) VALUES

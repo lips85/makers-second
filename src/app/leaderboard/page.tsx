@@ -84,14 +84,14 @@ function LeaderboardContent() {
   // 임시 사용자 ID 설정 (나중에 인증 시스템으로 대체)
   useEffect(() => {
     // 로컬 스토리지에서 사용자 ID 가져오기 또는 임시 생성
-    const storedUserId = localStorage.getItem("v2nz_user_id");
+    const storedUserId = localStorage.getItem("Word Rush_user_id");
     if (storedUserId) {
       setViewerUserId(storedUserId);
     } else {
       const tempUserId = `temp_${Date.now()}_${Math.random()
         .toString(36)
         .substr(2, 9)}`;
-      localStorage.setItem("v2nz_user_id", tempUserId);
+      localStorage.setItem("Word Rush_user_id", tempUserId);
       setViewerUserId(tempUserId);
     }
   }, []);

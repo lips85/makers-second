@@ -98,7 +98,7 @@ function LoginForm() {
             <ArrowLeft className="h-4 w-4 mr-2" />
             홈으로 돌아가기
           </Link>
-          <h2 className="text-3xl font-bold text-gray-900">V2NZ</h2>
+          <h2 className="text-3xl font-bold text-gray-900">Word Rush</h2>
           <p className="mt-2 text-sm text-gray-600">
             영어 단어 스피드 퀴즈에 오신 것을 환영합니다
           </p>

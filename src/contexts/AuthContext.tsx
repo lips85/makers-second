@@ -164,6 +164,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refresh_token: "guest_refresh_token",
         user: guestUser,
         expires_at: Math.floor(Date.now() / 1000) + 24 * 60 * 60, // 24시간
+        expires_in: 24 * 60 * 60, // 24시간 (초 단위)
         token_type: "bearer",
       });
 

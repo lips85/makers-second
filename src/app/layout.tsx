@@ -15,8 +15,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "V2NZ - 영어 단어 스피드 퀴즈",
-  description: "60~90초 라운드 동안 텍스트 기반 단어 문제를 풀고 정확도 × 속도로 점수를 산출하는 학습 게임",
+  title: "Word Rush - 영어 단어 스피드 퀴즈",
+  description:
+    "60~90초 라운드 동안 텍스트 기반 단어 문제를 풀고 정확도 × 속도로 점수를 산출하는 학습 게임",
 };
 
 export default function RootLayout({
@@ -30,9 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Providers>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
+          <AuthProvider>{children}</AuthProvider>
         </Providers>
       </body>
     </html>

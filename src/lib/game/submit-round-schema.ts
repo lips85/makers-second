@@ -3,19 +3,19 @@
  * Zod를 사용한 요청/응답 검증
  */
 
-import { z } from 'zod';
+import { z } from "zod";
 
 // 라운드 아이템 스키마
 export const RoundItemSchema = z.object({
   isCorrect: z.boolean(),
   responseTimeMs: z.number().min(0).max(30000),
-  score: z.number().min(0)
+  score: z.number().min(0),
 });
 
 // 라운드 제출 요청 스키마
 export const SubmitRoundRequestSchema = z.object({
-  durationSec: z.number().refine(val => [60, 75, 90].includes(val), {
-    message: 'Duration must be 60, 75, or 90 seconds'
+  durationSec: z.number().refine((val) => [60, 75, 90].includes(val), {
+    message: "Duration must be 60, 75, or 90 seconds",
   }),
   totalQuestions: z.number().min(1).max(50),
   correctAnswers: z.number().min(0),
@@ -24,11 +24,15 @@ export const SubmitRoundRequestSchema = z.object({
   endTime: z.string().datetime(),
   clientCalculatedScore: z.number().optional(),
   roundId: z.string().uuid().optional(), // 멱등성을 위한 ID
-  wordItems: z.array(z.object({
-    id: z.string().uuid(),
-    word: z.string(),
-    meaning: z.string()
-  })).optional()
+  wordItems: z
+    .array(
+      z.object({
+        id: z.string().uuid(),
+        word: z.string(),
+        meaning: z.string(),
+      })
+    )
+    .optional(),
 });
 
 // 라운드 제출 응답 스키마
@@ -43,35 +47,45 @@ export const SubmitRoundResponseSchema = z.object({
     maxPossibleScore: z.number(),
     grade: z.string(),
     percentile: z.number().optional(),
-    stanine: z.number().optional()
+    stanine: z.number().optional(),
   }),
-  percentileStats: z.object({
-    percentile: z.number(),
-    stanine: z.number(),
-    totalPlayers: z.number()
-  }).optional(),
-  leaderboard: z.object({
-    rank: z.number(),
-    totalPlayers: z.number(),
-    period: z.enum(['daily', 'weekly', 'monthly', 'all_time'])
-  }).optional(),
+  percentileStats: z
+    .object({
+      percentile: z.number(),
+      stanine: z.number(),
+      totalPlayers: z.number(),
+    })
+    .optional(),
+  leaderboard: z
+    .object({
+      rank: z.number(),
+      totalPlayers: z.number(),
+      period: z.enum(["daily", "weekly", "monthly", "all_time"]),
+    })
+    .optional(),
   message: z.string().optional(),
-  errors: z.array(z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.record(z.any()).optional()
-  })).optional()
+  errors: z
+    .array(
+      z.object({
+        code: z.string(),
+        message: z.string(),
+        details: z.record(z.any()).optional(),
+      })
+    )
+    .optional(),
 });
 
 // 에러 응답 스키마
 export const ErrorResponseSchema = z.object({
   success: z.literal(false),
   message: z.string(),
-  errors: z.array(z.object({
-    code: z.string(),
-    message: z.string(),
-    details: z.record(z.any()).optional()
-  }))
+  errors: z.array(
+    z.object({
+      code: z.string(),
+      message: z.string(),
+      details: z.record(z.any()).optional(),
+    })
+  ),
 });
 
 // 타입 추론
@@ -85,291 +99,307 @@ export function validateSubmitRoundRequest(data: unknown): SubmitRoundRequest {
   return SubmitRoundRequestSchema.parse(data);
 }
 
-export function validateSubmitRoundResponse(data: unknown): SubmitRoundResponse {
+export function validateSubmitRoundResponse(
+  data: unknown
+): SubmitRoundResponse {
   return SubmitRoundResponseSchema.parse(data);
 }
 
 // OpenAPI 스키마 (문서화용)
 export const OpenAPISchema = {
-  openapi: '3.0.0',
+  openapi: "3.0.0",
   info: {
-    title: 'V2NZ Round Submission API',
-    version: '1.0.0',
-    description: 'API for submitting game round results'
+    title: "Word Rush Round Submission API",
+    version: "1.0.0",
+    description: "API for submitting game round results",
   },
   paths: {
-    '/api/submitRound': {
+    "/api/submitRound": {
       post: {
-        summary: 'Submit a game round',
+        summary: "Submit a game round",
         requestBody: {
           required: true,
           content: {
-            'application/json': {
+            "application/json": {
               schema: {
-                $ref: '#/components/schemas/SubmitRoundRequest'
-              }
-            }
-          }
+                $ref: "#/components/schemas/SubmitRoundRequest",
+              },
+            },
+          },
         },
         responses: {
-          '200': {
-            description: 'Round submitted successfully',
+          "200": {
+            description: "Round submitted successfully",
             content: {
-              'application/json': {
+              "application/json": {
                 schema: {
-                  $ref: '#/components/schemas/SubmitRoundResponse'
-                }
-              }
-            }
+                  $ref: "#/components/schemas/SubmitRoundResponse",
+                },
+              },
+            },
           },
-          '400': {
-            description: 'Invalid request data',
+          "400": {
+            description: "Invalid request data",
             content: {
-              'application/json': {
+              "application/json": {
                 schema: {
-                  $ref: '#/components/schemas/ErrorResponse'
-                }
-              }
-            }
+                  $ref: "#/components/schemas/ErrorResponse",
+                },
+              },
+            },
           },
-          '401': {
-            description: 'Unauthorized',
+          "401": {
+            description: "Unauthorized",
             content: {
-              'application/json': {
+              "application/json": {
                 schema: {
-                  $ref: '#/components/schemas/ErrorResponse'
-                }
-              }
-            }
+                  $ref: "#/components/schemas/ErrorResponse",
+                },
+              },
+            },
           },
-          '500': {
-            description: 'Internal server error',
+          "500": {
+            description: "Internal server error",
             content: {
-              'application/json': {
+              "application/json": {
                 schema: {
-                  $ref: '#/components/schemas/ErrorResponse'
-                }
-              }
-            }
-          }
-        }
-      }
-    }
+                  $ref: "#/components/schemas/ErrorResponse",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
   },
   components: {
     schemas: {
       SubmitRoundRequest: {
-        type: 'object',
-        required: ['durationSec', 'totalQuestions', 'correctAnswers', 'items', 'startTime', 'endTime'],
+        type: "object",
+        required: [
+          "durationSec",
+          "totalQuestions",
+          "correctAnswers",
+          "items",
+          "startTime",
+          "endTime",
+        ],
         properties: {
           durationSec: {
-            type: 'integer',
+            type: "integer",
             enum: [60, 75, 90],
-            description: 'Round duration in seconds'
+            description: "Round duration in seconds",
           },
           totalQuestions: {
-            type: 'integer',
+            type: "integer",
             minimum: 1,
             maximum: 50,
-            description: 'Total number of questions in the round'
+            description: "Total number of questions in the round",
           },
           correctAnswers: {
-            type: 'integer',
+            type: "integer",
             minimum: 0,
-            description: 'Number of correct answers'
+            description: "Number of correct answers",
           },
           items: {
-            type: 'array',
+            type: "array",
             items: {
-              $ref: '#/components/schemas/RoundItem'
+              $ref: "#/components/schemas/RoundItem",
             },
             minItems: 1,
-            maxItems: 50
+            maxItems: 50,
           },
           startTime: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Round start time'
+            type: "string",
+            format: "date-time",
+            description: "Round start time",
           },
           endTime: {
-            type: 'string',
-            format: 'date-time',
-            description: 'Round end time'
+            type: "string",
+            format: "date-time",
+            description: "Round end time",
           },
           clientCalculatedScore: {
-            type: 'number',
-            description: 'Client-calculated score for verification'
+            type: "number",
+            description: "Client-calculated score for verification",
           },
           roundId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Round ID for idempotency'
-          }
-        }
+            type: "string",
+            format: "uuid",
+            description: "Round ID for idempotency",
+          },
+        },
       },
       RoundItem: {
-        type: 'object',
-        required: ['isCorrect', 'responseTimeMs', 'score'],
+        type: "object",
+        required: ["isCorrect", "responseTimeMs", "score"],
         properties: {
           isCorrect: {
-            type: 'boolean',
-            description: 'Whether the answer was correct'
+            type: "boolean",
+            description: "Whether the answer was correct",
           },
           responseTimeMs: {
-            type: 'integer',
+            type: "integer",
             minimum: 0,
             maximum: 30000,
-            description: 'Response time in milliseconds'
+            description: "Response time in milliseconds",
           },
           score: {
-            type: 'number',
+            type: "number",
             minimum: 0,
-            description: 'Score for this item'
-          }
-        }
+            description: "Score for this item",
+          },
+        },
       },
       SubmitRoundResponse: {
-        type: 'object',
-        required: ['success', 'roundId', 'metrics'],
+        type: "object",
+        required: ["success", "roundId", "metrics"],
         properties: {
           success: {
-            type: 'boolean',
-            description: 'Whether the submission was successful'
+            type: "boolean",
+            description: "Whether the submission was successful",
           },
           roundId: {
-            type: 'string',
-            format: 'uuid',
-            description: 'Generated round ID'
+            type: "string",
+            format: "uuid",
+            description: "Generated round ID",
           },
           metrics: {
-            $ref: '#/components/schemas/RoundMetrics'
+            $ref: "#/components/schemas/RoundMetrics",
           },
           percentileStats: {
-            $ref: '#/components/schemas/PercentileStats'
+            $ref: "#/components/schemas/PercentileStats",
           },
           leaderboard: {
-            $ref: '#/components/schemas/LeaderboardStats'
+            $ref: "#/components/schemas/LeaderboardStats",
           },
           message: {
-            type: 'string',
-            description: 'Optional success message'
-          }
-        }
+            type: "string",
+            description: "Optional success message",
+          },
+        },
       },
       RoundMetrics: {
-        type: 'object',
-        required: ['accuracy', 'speed', 'normalizedSpeed', 'totalScore', 'maxPossibleScore', 'grade'],
+        type: "object",
+        required: [
+          "accuracy",
+          "speed",
+          "normalizedSpeed",
+          "totalScore",
+          "maxPossibleScore",
+          "grade",
+        ],
         properties: {
           accuracy: {
-            type: 'number',
-            description: 'Accuracy percentage (0-100)'
+            type: "number",
+            description: "Accuracy percentage (0-100)",
           },
           speed: {
-            type: 'number',
-            description: 'Average response time in milliseconds'
+            type: "number",
+            description: "Average response time in milliseconds",
           },
           normalizedSpeed: {
-            type: 'number',
-            description: 'Normalized speed score (0-100)'
+            type: "number",
+            description: "Normalized speed score (0-100)",
           },
           totalScore: {
-            type: 'number',
-            description: 'Total calculated score'
+            type: "number",
+            description: "Total calculated score",
           },
           maxPossibleScore: {
-            type: 'number',
-            description: 'Maximum possible score'
+            type: "number",
+            description: "Maximum possible score",
           },
           grade: {
-            type: 'string',
-            enum: ['S', 'A', 'B', 'C', 'D', 'F'],
-            description: 'Grade based on performance'
+            type: "string",
+            enum: ["S", "A", "B", "C", "D", "F"],
+            description: "Grade based on performance",
           },
           percentile: {
-            type: 'number',
-            description: 'Percentile rank (0-100)'
+            type: "number",
+            description: "Percentile rank (0-100)",
           },
           stanine: {
-            type: 'number',
+            type: "number",
             minimum: 1,
             maximum: 9,
-            description: 'Stanine score'
-          }
-        }
+            description: "Stanine score",
+          },
+        },
       },
       PercentileStats: {
-        type: 'object',
-        required: ['percentile', 'stanine', 'totalPlayers'],
+        type: "object",
+        required: ["percentile", "stanine", "totalPlayers"],
         properties: {
           percentile: {
-            type: 'number',
-            description: 'Percentile rank (0-100)'
+            type: "number",
+            description: "Percentile rank (0-100)",
           },
           stanine: {
-            type: 'number',
+            type: "number",
             minimum: 1,
             maximum: 9,
-            description: 'Stanine score'
+            description: "Stanine score",
           },
           totalPlayers: {
-            type: 'number',
-            description: 'Total number of players in the period'
-          }
-        }
+            type: "number",
+            description: "Total number of players in the period",
+          },
+        },
       },
       LeaderboardStats: {
-        type: 'object',
-        required: ['rank', 'totalPlayers', 'period'],
+        type: "object",
+        required: ["rank", "totalPlayers", "period"],
         properties: {
           rank: {
-            type: 'number',
-            description: 'Current rank position'
+            type: "number",
+            description: "Current rank position",
           },
           totalPlayers: {
-            type: 'number',
-            description: 'Total number of players'
+            type: "number",
+            description: "Total number of players",
           },
           period: {
-            type: 'string',
-            enum: ['daily', 'weekly', 'monthly', 'all_time'],
-            description: 'Leaderboard period'
-          }
-        }
+            type: "string",
+            enum: ["daily", "weekly", "monthly", "all_time"],
+            description: "Leaderboard period",
+          },
+        },
       },
       ErrorResponse: {
-        type: 'object',
-        required: ['success', 'message'],
+        type: "object",
+        required: ["success", "message"],
         properties: {
           success: {
-            type: 'boolean',
-            enum: [false]
+            type: "boolean",
+            enum: [false],
           },
           message: {
-            type: 'string',
-            description: 'Error message'
+            type: "string",
+            description: "Error message",
           },
           errors: {
-            type: 'array',
+            type: "array",
             items: {
-              type: 'object',
+              type: "object",
               properties: {
                 code: {
-                  type: 'string',
-                  description: 'Error code'
+                  type: "string",
+                  description: "Error code",
                 },
                 message: {
-                  type: 'string',
-                  description: 'Error message'
+                  type: "string",
+                  description: "Error message",
                 },
                 details: {
-                  type: 'object',
-                  description: 'Additional error details'
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
+                  type: "object",
+                  description: "Additional error details",
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
 };
