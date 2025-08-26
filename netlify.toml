@@ -4,14 +4,11 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 # 보안 스캔 설정 - 특정 키만 제외
 [build.processing.secrets]
   omit_keys = ["NEXT_PUBLIC_SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_URL"]
-
-# 또는 보안 스캔 완전 비활성화
-# [build.processing.secrets]
-#   enabled = false
 
 # 빌드 최적화
 [build.processing]
@@ -40,8 +37,6 @@
 [context.production.environment]
   NODE_ENV = "production"
 
-[context.deploy-preview.environment]
-  NODE_ENV = "production"
-
-[context.branch-deploy.environment]
-  NODE_ENV = "production"
+# 플러그인 설정
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
