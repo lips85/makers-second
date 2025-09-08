@@ -22,68 +22,141 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingType, setLoadingType] = useState<
+    "signin" | "signup" | "google" | "guest" | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("signin");
+  const [passwordStrength, setPasswordStrength] = useState<{
+    score: number;
+    feedback: string;
+  } | null>(null);
 
   const { signIn, signUp, signInWithGoogle, signInAsGuest } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/";
 
+  // 비밀번호 강도 검증 함수
+  const checkPasswordStrength = (password: string) => {
+    let score = 0;
+    let feedback = "";
+
+    if (password.length >= 8) score += 1;
+    else feedback += "최소 8자 이상, ";
+
+    if (/[a-z]/.test(password)) score += 1;
+    else feedback += "소문자 포함, ";
+
+    if (/[A-Z]/.test(password)) score += 1;
+    else feedback += "대문자 포함, ";
+
+    if (/[0-9]/.test(password)) score += 1;
+    else feedback += "숫자 포함, ";
+
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+    else feedback += "특수문자 포함, ";
+
+    if (feedback) {
+      feedback = feedback.slice(0, -2) + "이 필요합니다.";
+    }
+
+    return { score, feedback };
+  };
+
+  // 비밀번호 변경 시 강도 검증
+  const handlePasswordChange = (newPassword: string) => {
+    setPassword(newPassword);
+    if (activeTab === "signup" && newPassword.length > 0) {
+      setPasswordStrength(checkPasswordStrength(newPassword));
+    } else {
+      setPasswordStrength(null);
+    }
+  };
+
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSuccessMessage(null);
+
+    const currentLoadingType = activeTab === "signin" ? "signin" : "signup";
+    setLoadingType(currentLoadingType);
 
     try {
-      const { error } =
-        activeTab === "signin"
-          ? await signIn(email, password)
-          : await signUp(email, password);
-
-      if (error) {
-        setError(error.message);
+      if (activeTab === "signin") {
+        const { error } = await signIn(email, password);
+        if (error) {
+          setError(error.message);
+        } else {
+          setSuccessMessage("로그인 성공! 페이지를 이동합니다...");
+          setTimeout(() => router.push(next), 1000);
+        }
       } else {
-        router.push(next);
+        // 회원가입 처리
+        const { error, data, needsEmailConfirmation } = await signUp(
+          email,
+          password
+        );
+
+        if (error) {
+          setError(error.message);
+        } else if (needsEmailConfirmation) {
+          setError("이메일 확인이 필요합니다. 이메일을 확인해주세요.");
+        } else {
+          setSuccessMessage("회원가입 성공! 페이지를 이동합니다...");
+          setTimeout(() => router.push(next), 1000);
+        }
       }
     } catch (err) {
       setError("인증 중 오류가 발생했습니다");
     } finally {
       setIsLoading(false);
+      setLoadingType(null);
     }
   };
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
+    setLoadingType("google");
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const { error } = await signInWithGoogle();
       if (error) {
         setError(error.message);
+      } else {
+        setSuccessMessage("Google 로그인 중...");
       }
     } catch (err) {
       setError("Google 로그인 중 오류가 발생했습니다");
     } finally {
       setIsLoading(false);
+      setLoadingType(null);
     }
   };
 
   const handleGuestAuth = async () => {
     setIsLoading(true);
+    setLoadingType("guest");
     setError(null);
+    setSuccessMessage(null);
 
     try {
       const { error } = await signInAsGuest();
       if (error) {
         setError(error.message);
       } else {
-        router.push(next);
+        setSuccessMessage("게스트 로그인 성공! 페이지를 이동합니다...");
+        setTimeout(() => router.push(next), 1000);
       }
     } catch (err) {
       setError("게스트 로그인 중 오류가 발생했습니다");
     } finally {
       setIsLoading(false);
+      setLoadingType(null);
     }
   };
 
@@ -149,7 +222,7 @@ function LoginForm() {
                     />
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
+                    {isLoading && loadingType === "signin" ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         로그인 중...
@@ -184,15 +257,49 @@ function LoginForm() {
                       id="signup-password"
                       type="password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="비밀번호를 입력하세요 (최소 6자)"
+                      onChange={(e) => handlePasswordChange(e.target.value)}
+                      placeholder="비밀번호를 입력하세요 (최소 8자)"
                       required
-                      minLength={6}
+                      minLength={8}
                       disabled={isLoading}
                     />
+                    {passwordStrength && (
+                      <div className="mt-2">
+                        <div className="flex items-center space-x-2">
+                          <div className="flex space-x-1">
+                            {[1, 2, 3, 4, 5].map((level) => (
+                              <div
+                                key={level}
+                                className={`h-2 w-full rounded ${
+                                  level <= passwordStrength.score
+                                    ? passwordStrength.score <= 2
+                                      ? "bg-red-500"
+                                      : passwordStrength.score <= 3
+                                      ? "bg-yellow-500"
+                                      : "bg-green-500"
+                                    : "bg-gray-200"
+                                }`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-gray-600">
+                            {passwordStrength.score <= 2
+                              ? "약함"
+                              : passwordStrength.score <= 3
+                              ? "보통"
+                              : "강함"}
+                          </span>
+                        </div>
+                        {passwordStrength.feedback && (
+                          <p className="text-xs text-red-600 mt-1">
+                            {passwordStrength.feedback}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <Button type="submit" className="w-full" disabled={isLoading}>
-                    {isLoading ? (
+                    {isLoading && loadingType === "signup" ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         회원가입 중...
@@ -227,8 +334,17 @@ function LoginForm() {
                   onClick={handleGoogleAuth}
                   disabled={isLoading}
                 >
-                  <Chrome className="mr-2 h-4 w-4" />
-                  Google로 계속하기
+                  {isLoading && loadingType === "google" ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Google 로그인 중...
+                    </>
+                  ) : (
+                    <>
+                      <Chrome className="mr-2 h-4 w-4" />
+                      Google로 계속하기
+                    </>
+                  )}
                 </Button>
 
                 <Button
@@ -237,8 +353,17 @@ function LoginForm() {
                   onClick={handleGuestAuth}
                   disabled={isLoading}
                 >
-                  <User className="mr-2 h-4 w-4" />
-                  게스트로 시작하기
+                  {isLoading && loadingType === "guest" ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      게스트 로그인 중...
+                    </>
+                  ) : (
+                    <>
+                      <User className="mr-2 h-4 w-4" />
+                      게스트로 시작하기
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -246,6 +371,14 @@ function LoginForm() {
             {error && (
               <Alert variant="destructive" className="mt-4">
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {successMessage && (
+              <Alert className="mt-4 border-green-200 bg-green-50">
+                <AlertDescription className="text-green-800">
+                  {successMessage}
+                </AlertDescription>
               </Alert>
             )}
           </CardContent>

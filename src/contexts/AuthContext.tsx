@@ -15,7 +15,14 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
-  signUp: (email: string, password: string) => Promise<{ error: any }>;
+  signUp: (
+    email: string,
+    password: string
+  ) => Promise<{
+    error: any;
+    data?: any;
+    needsEmailConfirmation?: boolean;
+  }>;
   signOut: () => Promise<void>;
   signInWithGoogle: () => Promise<{ error: any }>;
   signInAsGuest: () => Promise<{ error: any }>;
@@ -80,11 +87,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error: new Error("Supabase 클라이언트가 초기화되지 않았습니다."),
       };
     }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    return { error };
+
+    // 사용자 친화적 에러 메시지 매핑
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        "Invalid login credentials":
+          "이메일 또는 비밀번호가 올바르지 않습니다.",
+        "Email not confirmed":
+          "이메일 확인이 필요합니다. 이메일을 확인해주세요.",
+        "Too many requests":
+          "너무 많은 시도가 있었습니다. 잠시 후 다시 시도해주세요.",
+        "User not found": "등록되지 않은 이메일입니다.",
+        "Invalid email": "올바른 이메일 주소를 입력해주세요.",
+      };
+
+      const friendlyMessage = errorMessages[error.message] || error.message;
+      return { error: new Error(friendlyMessage) };
+    }
+
+    return { error: null };
   };
 
   const signUp = async (email: string, password: string) => {
@@ -93,11 +119,55 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error: new Error("Supabase 클라이언트가 초기화되지 않았습니다."),
       };
     }
-    const { error } = await supabase.auth.signUp({
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        // 개발 환경에서는 이메일 확인을 우회
+        emailRedirectTo:
+          process.env.NODE_ENV === "development"
+            ? `${window.location.origin}/auth/callback`
+            : undefined,
+      },
     });
-    return { error };
+
+    // 개발 환경에서 이메일 확인이 필요한 경우 자동으로 확인 처리
+    if (
+      process.env.NODE_ENV === "development" &&
+      data.user &&
+      !data.user.email_confirmed_at
+    ) {
+      console.log("개발 환경: 이메일 확인 우회 처리");
+      // 개발 환경에서는 즉시 로그인 허용
+      return { error: null, data, needsEmailConfirmation: false };
+    }
+
+    // 회원가입 에러 메시지도 사용자 친화적으로 변환
+    if (error) {
+      const errorMessages: Record<string, string> = {
+        "User already registered": "이미 등록된 이메일입니다.",
+        "Password should be at least 6 characters":
+          "비밀번호는 최소 6자 이상이어야 합니다.",
+        "Invalid email": "올바른 이메일 주소를 입력해주세요.",
+        "Signup is disabled": "현재 회원가입이 비활성화되어 있습니다.",
+        "Email rate limit exceeded":
+          "이메일 전송 한도를 초과했습니다. 잠시 후 다시 시도해주세요.",
+      };
+
+      const friendlyMessage = errorMessages[error.message] || error.message;
+      return {
+        error: new Error(friendlyMessage),
+        data,
+        needsEmailConfirmation: false,
+      };
+    }
+
+    return {
+      error: null,
+      data,
+      needsEmailConfirmation: !data.user?.email_confirmed_at,
+    };
   };
 
   const signOut = async () => {
@@ -113,13 +183,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         error: new Error("Supabase 클라이언트가 초기화되지 않았습니다."),
       };
     }
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-    return { error };
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (error) {
+        const errorMessages: Record<string, string> = {
+          "OAuth provider not enabled": "Google 로그인이 설정되지 않았습니다.",
+          "Invalid OAuth provider": "Google 로그인 설정에 문제가 있습니다.",
+          "OAuth callback error": "Google 로그인 중 오류가 발생했습니다.",
+        };
+
+        const friendlyMessage = errorMessages[error.message] || error.message;
+        return { error: new Error(friendlyMessage) };
+      }
+
+      return { error: null };
+    } catch (error) {
+      return { error: new Error("Google 로그인 중 오류가 발생했습니다.") };
+    }
   };
 
   const signInAsGuest = async () => {
